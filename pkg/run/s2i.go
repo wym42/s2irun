@@ -11,12 +11,18 @@ import (
 	"github.com/kubesphere/s2irun/pkg/docker"
 	s2ierr "github.com/kubesphere/s2irun/pkg/errors"
 	"github.com/kubesphere/s2irun/pkg/scm/git"
+	"github.com/kubesphere/s2irun/pkg/utils/cmd"
+	"github.com/kubesphere/s2irun/pkg/utils/fs"
 	utilglog "github.com/kubesphere/s2irun/pkg/utils/glog"
 	"os"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 const (
 	ConfigEnvVariable = "S2I_CONFIG_PATH"
+	KanikoEnvVariable = "KANIKO_EXEC_PATH"
 )
 
 var glog = utilglog.StderrLog
@@ -112,6 +118,45 @@ func App() int {
 		glog.Errorf("SourceURL is illegal, please check the error:\n%v", err)
 		return 1
 	}
+	kanikoPath := os.Getenv(KanikoEnvVariable)
+	// 配置了环境变量，则查看下文件存在不，如果文件不存在，则使用原来的逻辑
+	if _, err := os.Stat(kanikoPath); err == nil {
+		glog.Infof("kaniko path: %v", kanikoPath)
+		if git.HasGitBinary() {
+			sgit := git.New(fs.NewFileSystem(), cmd.NewCommandRunner())
+			os.MkdirAll(apiConfig.ContextDir, 0777)
+			if err := sgit.Clone(apiConfig.Source, apiConfig.ContextDir, git.CloneConfig{Quiet: false}); err != nil {
+				glog.Errorf("git clone failed %v", err)
+				return 1
+			}
+			sourceInfo := sgit.GetInfo(apiConfig.ContextDir)
+			commit := sourceInfo.CommitID
+			if len(commit) > 8 {
+				commit = commit[:8]
+			}
+			originalName := strings.ReplaceAll(apiConfig.Tag, "${DATE}", time.Now().Format("20060102150405"))
+			originalName = strings.ReplaceAll(originalName, "${COMMIT}", commit)
+			apiConfig.Tag, err = api.Parse(originalName, apiConfig.PushAuthentication.ServerAddress)
+		} else {
+			glog.Errorf("not found git")
+			return 1
+		}
+		opts := cmd.CommandOpts{
+			Stderr: os.Stderr,
+			Stdout: os.Stdout,
+		}
+		cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
+			"dockerfile", filepath.Join(apiConfig.WorkingDir, "Dockerfile"),
+			"--context", apiConfig.WorkingDir,
+			"--skip-tls-verify-registry", apiConfig.PushAuthentication.ServerAddress,
+			"--destination", apiConfig.Tag,
+		)
+		return 0
+	} else {
+		glog.Warningf("KanikoEnvVariable is set[%s], but:\n%v", kanikoPath, err)
+
+	}
+
 	apiConfig.Tag, err = api.Parse(apiConfig.Tag, apiConfig.PushAuthentication.ServerAddress)
 	if err != nil {
 		glog.Errorf("There are some errors in image name, please check the error:\n%v", err)

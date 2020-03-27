@@ -741,7 +741,6 @@ func (l *VolumeList) AsBinds() []string {
 }
 
 func Parse(originalName, serverAddress string) (ref string, err error) {
-
 	image, err := parseImage(originalName)
 	if err != nil {
 		return "", fmt.Errorf("parsing image %q failed: %v", originalName, err)
