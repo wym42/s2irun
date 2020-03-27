@@ -1,5 +1,7 @@
 FROM golang:1.11-alpine as builder
 
+ENV GOPROXY http://mirrors.aliyun.com/goproxy/
+
 WORKDIR /go/src/github.com/kubesphere/s2irun
 COPY cmd/ cmd/
 COPY pkg/ pkg/
@@ -18,13 +20,14 @@ WORKDIR /root/
 
 RUN apk update && apk upgrade && \
     apk add --no-cache bash git openssh
+
 COPY ./executor /bin/kaniko
 RUN chmod +x /bin/kaniko
 ENV KANIKO_EXEC_PATH /bin/kaniko
 
 ENV S2I_CONFIG_PATH=/root/data/config.json
 COPY --from=builder /go/src/github.com/kubesphere/s2irun/kaniko .
-COPY --from=builder /go/src/github.com/kubesphere/s2irun/builder .
+COPY --from=builder /go/src/github.com/kubesphere/s2irun/builder /bin/kaniko
 
 CMD ["./builder", "-v=4", "-logtostderr=true"]
 

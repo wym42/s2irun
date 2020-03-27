@@ -134,8 +134,8 @@ func App() int {
 			if len(commit) > 8 {
 				commit = commit[:8]
 			}
-			originalName := strings.ReplaceAll(apiConfig.Tag, "${DATE}", time.Now().Format("20060102150405"))
-			originalName = strings.ReplaceAll(originalName, "${COMMIT}", commit)
+			originalName := strings.Replace(apiConfig.Tag, "${DATE}", time.Now().Format("20060102150405"), 0)
+			originalName = strings.Replace(originalName, "${COMMIT}", commit, 0)
 			apiConfig.Tag, err = api.Parse(originalName, apiConfig.PushAuthentication.ServerAddress)
 		} else {
 			glog.Errorf("not found git")
