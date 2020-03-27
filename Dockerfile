@@ -13,8 +13,8 @@ RUN chmod +x /go/src/github.com/kubesphere/s2irun/kaniko
 RUN chmod +x /go/src/github.com/kubesphere/s2irun/builder
 
 
-#FROM alpine:latest
-FROM alpine:3.10
+FROM alpine:latest
+#FROM alpine:3.10
 
 ARG GIT_COMMIT
 ARG BUILD_TIME
@@ -27,15 +27,15 @@ WORKDIR /root/
 RUN apk update && apk upgrade && \
     apk add --no-cache bash git openssh
 
-COPY ./executor /bin/kaniko
-RUN chmod +x /bin/kaniko
+#COPY ./executor /bin/kaniko
+#RUN chmod +x /bin/kaniko
 ENV KANIKO_EXEC_PATH /bin/kaniko
 
 ENV S2I_CONFIG_PATH=/root/data/config.json
-COPY --from=builder /go/src/github.com/kubesphere/s2irun/kaniko .
-COPY --from=builder /go/src/github.com/kubesphere/s2irun/builder /bin/kaniko
+COPY --from=builder /go/src/github.com/kubesphere/s2irun/kaniko /bin/kaniko
+COPY --from=builder /go/src/github.com/kubesphere/s2irun/builder /bin/builder
 
-CMD ["./builder", "-v=4", "-logtostderr=true"]
+CMD ["builder", "-v=4", "-logtostderr=true"]
 
 
 
