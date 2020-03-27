@@ -134,9 +134,13 @@ func App() int {
 			if len(commit) > 8 {
 				commit = commit[:8]
 			}
-			originalName := strings.Replace(apiConfig.Tag, "${DATE}", time.Now().Format("20060102150405"), 0)
-			originalName = strings.Replace(originalName, "${COMMIT}", commit, 0)
+			originalName := strings.ReplaceAll(apiConfig.Tag, "${DATE}", time.Now().Format("20060102150405"))
+			originalName = strings.ReplaceAll(originalName, "${COMMIT}", commit)
 			apiConfig.Tag, err = api.Parse(originalName, apiConfig.PushAuthentication.ServerAddress)
+			if err != nil {
+				glog.Errorf("There are some errors in image name, please check the error:\n%v", err)
+				return 1
+			}
 		} else {
 			glog.Errorf("not found git")
 			return 1
@@ -145,9 +149,13 @@ func App() int {
 			Stderr: os.Stderr,
 			Stdout: os.Stdout,
 		}
+		glog.Info("kaniko --dockerfile ", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
+			"   --context", apiConfig.ContextDir, "  --skip-tls-verify-registry ",
+			apiConfig.PushAuthentication.ServerAddress, "  --destination 	", apiConfig.Tag)
+
 		cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
-			"--dockerfile", filepath.Join(apiConfig.WorkingDir, "Dockerfile"),
-			"--context", apiConfig.WorkingDir,
+			"--dockerfile", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
+			"--context", apiConfig.ContextDir,
 			"--skip-tls-verify-registry", apiConfig.PushAuthentication.ServerAddress,
 			"--destination", apiConfig.Tag,
 		)
