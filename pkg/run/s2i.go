@@ -146,7 +146,7 @@ func App() int {
 			Stdout: os.Stdout,
 		}
 		cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
-			"dockerfile", filepath.Join(apiConfig.WorkingDir, "Dockerfile"),
+			"--dockerfile", filepath.Join(apiConfig.WorkingDir, "Dockerfile"),
 			"--context", apiConfig.WorkingDir,
 			"--skip-tls-verify-registry", apiConfig.PushAuthentication.ServerAddress,
 			"--destination", apiConfig.Tag,
