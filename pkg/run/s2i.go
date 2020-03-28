@@ -2,6 +2,7 @@ package run
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/kubesphere/s2irun/pkg/api"
@@ -154,7 +155,27 @@ func App() int {
 			"   --dockerfile ", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
 			"   --context", apiConfig.ContextDir, "  --skip-tls-verify-registry ",
 			apiConfig.PushAuthentication.ServerAddress, "  --destination 	", apiConfig.Tag)
+		token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", apiConfig.PushAuthentication.Username, apiConfig.PushAuthentication.Password)))
+		dockerConfig := map[string]interface{}{"auths": map[string]interface{}{
+			fmt.Sprintf("https://%s/v2/", apiConfig.PushAuthentication.ServerAddress):
+			map[string]string{
+				"auth": token,
+			}}}
+		bs, err := json.Marshal(dockerConfig)
+		if err != nil {
+			glog.Errorf("marshal docker config err:%v", err)
+		}
+		os.MkdirAll("/kaniko/.docker", 0777)
+		_file, err := os.Create("/kaniko/.docker/config.json")
+		if err != nil {
+			glog.Errorf("write docker config failed, %v", err)
+		}
+		_, err = _file.Write(bs)
+		_file.Close()
 
+		if err != nil {
+			glog.Errorf("write docker config failed, %v", err)
+		}
 		err = cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
 			"--host-aliases", "10.193.28.1:registry.vivo.bj04.xyz",
 			"--dockerfile", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
