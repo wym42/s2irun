@@ -149,11 +149,14 @@ func App() int {
 			Stderr: os.Stderr,
 			Stdout: os.Stdout,
 		}
-		glog.Info("kaniko --dockerfile ", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
+		glog.Info(
+			"kaniko --host-aliases ", "10.193.28.1:registry.vivo.bj04.xyz",
+			"   --dockerfile ", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
 			"   --context", apiConfig.ContextDir, "  --skip-tls-verify-registry ",
 			apiConfig.PushAuthentication.ServerAddress, "  --destination 	", apiConfig.Tag)
 
 		err = cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
+			"--host-aliases", "10.193.28.1:registry.vivo.bj04.xyz",
 			"--dockerfile", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
 			"--context", apiConfig.ContextDir,
 			"--skip-tls-verify-registry", apiConfig.PushAuthentication.ServerAddress,
