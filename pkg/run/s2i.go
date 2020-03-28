@@ -153,12 +153,16 @@ func App() int {
 			"   --context", apiConfig.ContextDir, "  --skip-tls-verify-registry ",
 			apiConfig.PushAuthentication.ServerAddress, "  --destination 	", apiConfig.Tag)
 
-		cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
+		err = cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
 			"--dockerfile", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
 			"--context", apiConfig.ContextDir,
 			"--skip-tls-verify-registry", apiConfig.PushAuthentication.ServerAddress,
 			"--destination", apiConfig.Tag,
 		)
+		if err != nil {
+			glog.Errorf("Build failed, please check the error:\n%v", err)
+			return 1
+		}
 		return 0
 	} else {
 		glog.Warningf("KanikoEnvVariable is set[%s], but:\n%v", kanikoPath, err)
