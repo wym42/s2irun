@@ -217,6 +217,7 @@ func App() int {
 			ImageSize:     tagInfo.Size,
 			ImageID:       tagInfo.Digest,
 			ImageRepoTags: imageRepoTags,
+			CommandPull:   fmt.Sprintf("docker pull %s/%s", apiConfig.PushAuthentication.ServerAddress, originalName),
 		})
 		return 0
 	} else {
@@ -238,9 +239,11 @@ func App() int {
 }
 
 func getTagInfo(imageName, tag string, entry api.AuthConfig) (tagInfo api.TagInfo) {
-
+	tagInfo = api.TagInfo{
+		Created: time.Now().Format("2006-01-02 15:04:05"),
+	}
 	uri := &url.URL{
-		Scheme: "https://",
+		Scheme: "https",
 		Host:   entry.ServerAddress,
 		Path:   fmt.Sprintf("/api/repositories/%s/tags/%s", imageName, tag),
 		User:   url.UserPassword(entry.Username, entry.Password),
