@@ -16,6 +16,8 @@ import (
 	"github.com/kubesphere/s2irun/pkg/utils/cmd"
 	"github.com/kubesphere/s2irun/pkg/utils/fs"
 	utilglog "github.com/kubesphere/s2irun/pkg/utils/glog"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -204,13 +206,16 @@ func App() int {
 
 		ori := strings.Split(originalName, ":")
 		imageName := ori[0]
-		var imageRepoTags []string
+		imageRepoTags := []string{"latest"}
 		if len(ori) > 2 {
 			imageRepoTags = []string{ori[1]}
 		}
+		tagInfo := getTagInfo(imageName, imageRepoTags[0], apiConfig.PushAuthentication)
 		outputresult.KanikoAddBuildResultToAnnotation(&api.OutputResultInfo{
 			ImageName:     imageName,
-			ImageCreated:  time.Now().Format("2006-01-02 15:04:05"),
+			ImageCreated:  tagInfo.Created,
+			ImageSize:     tagInfo.Size,
+			ImageID:       tagInfo.Digest,
 			ImageRepoTags: imageRepoTags,
 		})
 		return 0
@@ -230,4 +235,32 @@ func App() int {
 		return 1
 	}
 	return 0
+}
+
+func getTagInfo(imageName, tag string, entry api.AuthConfig) (tagInfo api.TagInfo) {
+
+	uri := &url.URL{
+		Scheme: "https://",
+		Host:   entry.ServerAddress,
+		Path:   fmt.Sprintf("/api/repositories/%s/tags/%s", imageName, tag),
+		User:   url.UserPassword(entry.Username, entry.Password),
+	}
+
+	client := http.Client{}
+	req, err := http.NewRequest("GET", uri.String(), nil)
+	if err != nil {
+		glog.Errorf("new req %s failed, %v", uri.String(), err)
+		return
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		glog.Errorf(" req %s failed, %v", uri.String(), err)
+		return
+	}
+	defer resp.Body.Close()
+	err = json.NewDecoder(resp.Body).Decode(&tagInfo)
+	if err != nil {
+		glog.Errorf("get image failed %+v", err)
+	}
+	return
 }

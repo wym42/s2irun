@@ -801,3 +801,10 @@ func (i *ImageInfo) Reference() string {
 
 	return i.Tag
 }
+
+type TagInfo struct {
+	Digest  string `json:"digest"`
+	Name    string `json:"name"`
+	Size    int64    `json:"size"`
+	Created string `json:"created"`
+}
