@@ -2,6 +2,7 @@ package run
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -249,6 +250,11 @@ func getTagInfo(imageName, tag string, entry api.AuthConfig) (tagInfo api.TagInf
 		User:   url.UserPassword(entry.Username, entry.Password),
 	}
 
+	http.DefaultClient.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 	client := http.Client{}
 	req, err := http.NewRequest("GET", uri.String(), nil)
 	if err != nil {
