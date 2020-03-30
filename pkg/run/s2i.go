@@ -161,9 +161,17 @@ func App() int {
 			Stderr: os.Stderr,
 			Stdout: os.Stdout,
 		}
+		df := "Dockerfile"
+		if apiConfig.AsDockerfile != "" {
+			df = apiConfig.AsDockerfile
+			glog.Info("docker file: ", df)
+		}
+		if !strings.HasPrefix(df, "/") {
+			df = filepath.Join(apiConfig.ContextDir, df)
+		}
 		glog.Info(
 			"kaniko --host-aliases ", "10.193.28.1:registry.vivo.bj04.xyz",
-			"  --dockerfile ", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
+			"  --dockerfile ", df,
 			"  --context ", apiConfig.ContextDir,
 			"  --skip-tls-verify-registry ",
 			apiConfig.PushAuthentication.ServerAddress, "  --destination 	", apiConfig.Tag)
@@ -195,7 +203,7 @@ func App() int {
 		glog.Info("docker config path", os.Getenv("DOCKER_CONFIG"))
 		err = cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
 			"--host-aliases", "10.193.28.1:registry.vivo.bj04.xyz",
-			"--dockerfile", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
+			"--dockerfile", df,
 			"--context", apiConfig.ContextDir,
 			"--skip-tls-verify-registry", apiConfig.PushAuthentication.ServerAddress,
 			"--destination", apiConfig.Tag,
