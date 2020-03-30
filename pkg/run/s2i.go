@@ -153,7 +153,7 @@ func App() int {
 		glog.Info(
 			"kaniko --host-aliases ", "10.193.28.1:registry.vivo.bj04.xyz",
 			"   --dockerfile ", filepath.Join(apiConfig.ContextDir, "Dockerfile"),
-			"   --context", apiConfig.ContextDir, "  --skip-tls-verify-registry ",
+			"   --context ", apiConfig.ContextDir, "  --skip-tls-verify-registry ",
 			apiConfig.PushAuthentication.ServerAddress, "  --destination 	", apiConfig.Tag)
 		token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", apiConfig.PushAuthentication.Username, apiConfig.PushAuthentication.Password)))
 		dockerConfig := map[string]interface{}{"auths": map[string]interface{}{
