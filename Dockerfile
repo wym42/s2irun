@@ -1,4 +1,4 @@
-FROM registry.vivo.bj04.xyz/golang:1.14 as builder
+FROM registry.vivo.bj04.xyz/public/golang:1.14 as builder
 
 ENV GOPROXY http://mirrors.aliyun.com/goproxy/
 WORKDIR /go/src/github.com/kubesphere/s2irun
