@@ -162,13 +162,13 @@ func App() int {
 				"auth": token,
 			}}}
 		bs, err := json.Marshal(dockerConfig)
-		glog.Info("write docker config [%s] to /vdoc/.docker/", string(bs))
+		glog.Infof("write docker config [%s] to /vdoc/.docker/", string(bs))
 		if err != nil {
 			glog.Errorf("marshal docker config err:%v", err)
 		}
 
 		os.MkdirAll("/vdoc/.docker", 0777)
-		_file, err := os.Create("/kaniko/.docker/config.json")
+		_file, err := os.Create("/vdoc/.docker/config.json")
 		if err != nil {
 			glog.Errorf("write docker config failed, %v", err)
 		}
