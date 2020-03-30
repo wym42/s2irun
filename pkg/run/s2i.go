@@ -157,7 +157,7 @@ func App() int {
 			apiConfig.PushAuthentication.ServerAddress, "  --destination 	", apiConfig.Tag)
 		token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", apiConfig.PushAuthentication.Username, apiConfig.PushAuthentication.Password)))
 		dockerConfig := map[string]interface{}{"auths": map[string]interface{}{
-			fmt.Sprintf("https://%s/v2/", apiConfig.PushAuthentication.ServerAddress):
+			apiConfig.PushAuthentication.ServerAddress:
 			map[string]string{
 				"auth": token,
 			}}}
