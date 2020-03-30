@@ -1,4 +1,4 @@
-FROM registry.vivo.bj04.xyz/public/golang:1.14 as builder
+FROM golang:1.14 as builder
 
 ENV GOPROXY http://mirrors.aliyun.com/goproxy/
 WORKDIR /go/src/github.com/kubesphere/s2irun
@@ -30,7 +30,7 @@ RUN apk update && apk upgrade && \
 #COPY ./executor /bin/kaniko
 #RUN chmod +x /bin/kaniko
 ENV KANIKO_EXEC_PATH /bin/kaniko
-ENV DOCKER_CONFIG /kaniko/.docker
+ENV DOCKER_CONFIG /kaniko/.docker/
 ENV S2I_CONFIG_PATH=/root/data/config.json
 COPY --from=builder /go/src/github.com/kubesphere/s2irun/kaniko /bin/kaniko
 COPY --from=builder /go/src/github.com/kubesphere/s2irun/builder /bin/builder
