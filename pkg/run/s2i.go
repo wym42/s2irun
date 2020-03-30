@@ -250,12 +250,12 @@ func getTagInfo(imageName, tag string, entry api.AuthConfig) (tagInfo api.TagInf
 		User:   url.UserPassword(entry.Username, entry.Password),
 	}
 
-	http.DefaultClient.Transport = &http.Transport{
+	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
 	}
-	client := http.Client{}
+	client := http.Client{Transport: tr}
 	req, err := http.NewRequest("GET", uri.String(), nil)
 	if err != nil {
 		glog.Errorf("new req %s failed, %v", uri.String(), err)
@@ -263,7 +263,7 @@ func getTagInfo(imageName, tag string, entry api.AuthConfig) (tagInfo api.TagInf
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		glog.Errorf(" req %s failed, %v", uri.String(), err)
+		glog.Errorf("req %s failed, %v", uri.String(), err)
 		return
 	}
 	defer resp.Body.Close()
