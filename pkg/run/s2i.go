@@ -177,7 +177,7 @@ func App() int {
 		if err != nil {
 			glog.Errorf("write docker config failed, %v", err)
 		}
-		os.Setenv("DOCKER_CONFIG", "/kaniko/.docker")
+		//os.Setenv("DOCKER_CONFIG", "/kaniko/.docker/")
 		glog.Info("docker config path", os.Getenv("DOCKER_CONFIG"))
 		err = cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
 			"--host-aliases", "10.193.28.1:registry.vivo.bj04.xyz",
