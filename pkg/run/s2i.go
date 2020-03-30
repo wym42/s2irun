@@ -11,6 +11,7 @@ import (
 	"github.com/kubesphere/s2irun/pkg/build/strategies"
 	"github.com/kubesphere/s2irun/pkg/docker"
 	s2ierr "github.com/kubesphere/s2irun/pkg/errors"
+	"github.com/kubesphere/s2irun/pkg/outputresult"
 	"github.com/kubesphere/s2irun/pkg/scm/git"
 	"github.com/kubesphere/s2irun/pkg/utils/cmd"
 	"github.com/kubesphere/s2irun/pkg/utils/fs"
@@ -123,6 +124,8 @@ func App() int {
 	// 配置了环境变量，则查看下文件存在不，如果文件不存在，则使用原来的逻辑
 	if _, err := os.Stat(kanikoPath); err == nil {
 		glog.Infof("kaniko path: %v", kanikoPath)
+		originalName := apiConfig.Tag
+
 		if git.HasGitBinary() {
 			sgit := git.New(fs.NewFileSystem(), cmd.NewCommandRunner())
 			os.MkdirAll(apiConfig.ContextDir, 0777)
@@ -135,8 +138,13 @@ func App() int {
 			if len(commit) > 8 {
 				commit = commit[:8]
 			}
-			originalName := strings.ReplaceAll(apiConfig.Tag, "${DATE}", time.Now().Format("20060102150405"))
+			if !strings.Contains(originalName, "/") {
+				glog.Infof("origin name:%s,has no repo, add username :%s", originalName, apiConfig.PushAuthentication.Username)
+				originalName = apiConfig.PushAuthentication.Username + "/" + originalName
+			}
+			originalName = strings.ReplaceAll(originalName, "${DATE}", time.Now().Format("20060102150405"))
 			originalName = strings.ReplaceAll(originalName, "${COMMIT}", commit)
+
 			apiConfig.Tag, err = api.Parse(originalName, apiConfig.PushAuthentication.ServerAddress)
 			if err != nil {
 				glog.Errorf("There are some errors in image name, please check the error:\n%v", err)
@@ -180,7 +188,7 @@ func App() int {
 		if err != nil {
 			glog.Errorf("write docker config failed, %v", err)
 		}
-		//os.Setenv("DOCKER_CONFIG", "/kaniko/.docker/")
+
 		glog.Info("docker config path", os.Getenv("DOCKER_CONFIG"))
 		err = cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
 			"--host-aliases", "10.193.28.1:registry.vivo.bj04.xyz",
@@ -193,6 +201,18 @@ func App() int {
 			glog.Errorf("Build failed, please check the error:\n%v", err)
 			return 1
 		}
+
+		ori := strings.Split(originalName, ":")
+		imageName := ori[0]
+		var imageRepoTags []string
+		if len(ori) > 2 {
+			imageRepoTags = []string{ori[1]}
+		}
+		outputresult.KanikoAddBuildResultToAnnotation(&api.OutputResultInfo{
+			ImageName:     imageName,
+			ImageCreated:  time.Now().Format("2006-01-02 15:04:05"),
+			ImageRepoTags: imageRepoTags,
+		})
 		return 0
 	} else {
 		glog.Warningf("KanikoEnvVariable is set[%s], but:\n%v", kanikoPath, err)

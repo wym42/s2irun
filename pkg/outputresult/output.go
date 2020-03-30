@@ -82,3 +82,37 @@ func AddBuildResultToAnnotation(buildResult *api.Result) error {
 
 	return retryErr
 }
+
+func KanikoAddBuildResultToAnnotation(resultInfo *api.OutputResultInfo) error {
+	namespace := os.Getenv("POD_NAMESPACE")
+	podName := os.Getenv("POD_NAME")
+	if namespace == "" || podName == "" {
+		glog.Warning("failed to get env S2iRun PodName and S2iRun Namespace")
+		return nil
+	}
+	cfg, err := config.GetConfig()
+	if err != nil {
+		glog.Errorf("failed to get k8s config file, reason: %s", err)
+		return err
+	}
+	k8sClient := kubernetes.NewForConfigOrDie(cfg)
+
+	retryErr := retry.RetryOnConflict(Retry, func() error {
+		pod, err := k8sClient.CoreV1().Pods(namespace).Get(podName, v1.GetOptions{})
+		if err != nil {
+			glog.Errorf("failed to get pod %s in namespace %s, reason: %s", podName, namespace, err)
+			return err
+		}
+
+		//update pod annotations
+		result, _ := json.Marshal(resultInfo)
+		pod.Annotations = map[string]string{
+			api.AnnotationBuildResultKey: string(result),
+		}
+
+		_, err = k8sClient.CoreV1().Pods(namespace).Update(pod)
+		return err
+	})
+
+	return retryErr
+}
