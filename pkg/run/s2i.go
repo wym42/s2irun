@@ -167,8 +167,8 @@ func App() int {
 			glog.Errorf("marshal docker config err:%v", err)
 		}
 
-		os.MkdirAll("/vdoc/.docker", 0777)
-		_file, err := os.Create("/vdoc/.docker/config.json")
+		glog.Infof("mkdir dir /vdoc/.docker/ \n", os.MkdirAll("/vdoc/.docker/", 0700))
+		_file, err := os.Open("/vdoc/.docker/config.json")
 		if err != nil {
 			glog.Errorf("write docker config failed, %v", err)
 		}
