@@ -162,13 +162,13 @@ func App() int {
 				"auth": token,
 			}}}
 		bs, err := json.Marshal(dockerConfig)
-		glog.Infof("write docker config [%s] to /vdoc/.docker/", string(bs))
+		glog.Infof("write docker config [%s] to /kaniko/.docker/", string(bs))
 		if err != nil {
 			glog.Errorf("marshal docker config err:%v", err)
 		}
 
-		glog.Infof("mkdir dir /vdoc/.docker/ \n", os.MkdirAll("/vdoc/.docker/", 0700))
-		_file, err := os.Open("/vdoc/.docker/config.json")
+		glog.Infof("mkdir dir /kaniko/.docker/ \n", os.MkdirAll("/kaniko/.docker/", 0700))
+		_file, err := os.Open("/kaniko/.docker/config.json")
 		if err != nil {
 			glog.Errorf("write docker config failed, %v", err)
 		}
@@ -177,7 +177,7 @@ func App() int {
 		if err != nil {
 			glog.Errorf("write docker config failed, %v", err)
 		}
-		os.Setenv("DOCKER_CONFIG", "/vdoc/.docker")
+		os.Setenv("DOCKER_CONFIG", "/kaniko/.docker")
 		glog.Info("docker config path", os.Getenv("DOCKER_CONFIG"))
 		err = cmd.NewCommandRunner().RunWithOptions(opts, kanikoPath,
 			"--host-aliases", "10.193.28.1:registry.vivo.bj04.xyz",
