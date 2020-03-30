@@ -168,7 +168,9 @@ func App() int {
 			glog.Errorf("marshal docker config err:%v", err)
 		}
 
-		glog.Infof("mkdir dir /kaniko/.docker/ \n", os.MkdirAll("/kaniko/.docker/", 0700))
+		if err = os.MkdirAll("/kaniko/.docker/", 0766); err != nil {
+			glog.Infof("mkdir dir /kaniko/.docker/ %v", err)
+		}
 		_file, err := os.Create("/kaniko/.docker/config.json")
 		if err != nil {
 			glog.Errorf("write docker config failed, %v", err)
