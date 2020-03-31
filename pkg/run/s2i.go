@@ -219,6 +219,7 @@ func App() int {
 		if len(ori) > 2 {
 			imageRepoTags = []string{ori[1]}
 		}
+		glog.Errorf("ask taginfo")
 		tagInfo := getTagInfo(imageName, imageRepoTags[0], apiConfig.PushAuthentication)
 		glog.Infof("image name:%s tag:%s info:%v", imageName, imageRepoTags[0], tagInfo)
 		outputresult.KanikoAddBuildResultToAnnotation(&api.OutputResultInfo{
