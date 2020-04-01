@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"github.com/golang/glog"
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 // CommandOpts contains options to attach Stdout/err to a command to run
@@ -35,6 +37,7 @@ type runner struct {
 
 // RunWithOptions runs a command with the provided options
 func (c *runner) RunWithOptions(opts CommandOpts, name string, arg ...string) error {
+	glog.Info("Clone %s %s",strings.Join(arg, " ") )
 	cmd := exec.Command(name, arg...)
 	if opts.Stdout != nil {
 		cmd.Stdout = opts.Stdout
