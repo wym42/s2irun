@@ -53,6 +53,9 @@ func cloneConfigToArgs(opts CloneConfig) []string {
 	if opts.Recursive {
 		result = append(result, "--recursive")
 	}
+	if opts.Branch != ""{
+		result  = append(result, "--branch" , opts.Branch)
+	}
 	return result
 }
 

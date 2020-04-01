@@ -5,6 +5,7 @@ package git
 type CloneConfig struct {
 	Recursive bool
 	Quiet     bool
+	Branch    string
 }
 
 // SourceInfo stores information about the source code

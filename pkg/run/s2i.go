@@ -132,7 +132,7 @@ func App() int {
 		if git.HasGitBinary() {
 			sgit := git.New(fs.NewFileSystem(), cmd.NewCommandRunner())
 			os.MkdirAll(apiConfig.ContextDir, 0777)
-			if err := sgit.Clone(apiConfig.Source, apiConfig.ContextDir, git.CloneConfig{Quiet: false}); err != nil {
+			if err := sgit.Clone(apiConfig.Source, apiConfig.ContextDir, git.CloneConfig{Quiet: false, Branch: apiConfig.RevisionId}); err != nil {
 				glog.Errorf("git clone failed %v", err)
 				return 1
 			}
